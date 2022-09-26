@@ -1,12 +1,15 @@
 package com.fox.services
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.fox.services.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -14,17 +17,20 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         with(binding) {
             btnSimpleService.setOnClickListener {
                 startService(MyService.newIntent(this@MainActivity, 25))
             }
 
             btnForegroundService.setOnClickListener {
-                showNotification()
+                ContextCompat.startForegroundService(this@MainActivity, MyForegroundService.newIntent(this@MainActivity))
+//                showNotification()
             }
 
             btnIntentService.setOnClickListener {
@@ -49,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun showNotification() {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
