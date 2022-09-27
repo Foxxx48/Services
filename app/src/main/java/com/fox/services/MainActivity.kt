@@ -1,13 +1,11 @@
 package com.fox.services
 
 import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.fox.services.databinding.ActivityMainBinding
@@ -51,6 +49,11 @@ class MainActivity : AppCompatActivity() {
 
             btnWorkManager.setOnClickListener {
 
+            }
+
+            btnStop.setOnClickListener {
+                stopService(MyService.newIntent(this@MainActivity,1))
+                stopService(MyForegroundService.newIntent(this@MainActivity))
             }
         }
     }

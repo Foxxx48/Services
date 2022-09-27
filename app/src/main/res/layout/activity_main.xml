@@ -64,4 +64,13 @@
         android:layout_height="wrap_content"
         android:text="@string/work_manager"
         />
+
+    <Button
+        android:id="@+id/btn_stop"
+        style="@style/ServiceButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/stop"
+        android:backgroundTint="#FF5722"
+        />
 </LinearLayout>
