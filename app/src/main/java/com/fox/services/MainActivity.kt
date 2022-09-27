@@ -13,6 +13,8 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkManager
 import com.fox.services.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +23,8 @@ class MainActivity : AppCompatActivity() {
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
+
+
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -73,7 +77,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnWorkManager.setOnClickListener {
-
+                val workManager = WorkManager.getInstance(applicationContext)
+                workManager.beginUniqueWork(
+                    MyWorker.WORK_NAME,
+                    ExistingWorkPolicy.KEEP,
+                    MyWorker.makeRequest(page++)
+                ).enqueue()
             }
 
             btnStop.setOnClickListener {
