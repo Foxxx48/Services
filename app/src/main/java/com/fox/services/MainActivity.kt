@@ -3,6 +3,9 @@ package com.fox.services
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -27,16 +30,27 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnForegroundService.setOnClickListener {
-                ContextCompat.startForegroundService(this@MainActivity, MyForegroundService.newIntent(this@MainActivity))
+                ContextCompat.startForegroundService(
+                    this@MainActivity,
+                    MyForegroundService.newIntent(this@MainActivity)
+                )
 //                showNotification()
             }
 
             btnIntentService.setOnClickListener {
-
+//                ContextCompat.startForegroundService(this@MainActivity,MyIntentService.newIntent(this@MainActivity))
+                startService(MyIntentService.newIntent(this@MainActivity))
             }
 
-            btnJobDispatcher.setOnClickListener {
+            btnJobScheduler.setOnClickListener {
+                val componentName = ComponentName(this@MainActivity, MyJobService::class.java)
+                val jobInfo = JobInfo.Builder(MyJobService.JOB_ID, componentName)
+                    .setRequiresCharging(true)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                    .build()
 
+                val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
+                jobScheduler.schedule(jobInfo)
             }
 
             btnJobIntentService.setOnClickListener {
@@ -54,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             btnStop.setOnClickListener {
                 stopService(MyService.newIntent(this@MainActivity,1))
                 stopService(MyForegroundService.newIntent(this@MainActivity))
+                stopService(MyIntentService.newIntent(this@MainActivity))
             }
         }
     }
