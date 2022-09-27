@@ -5,20 +5,25 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
+import android.app.job.JobWorkItem
 import android.content.ComponentName
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.fox.services.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    private var page = 0
+
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,15 +50,21 @@ class MainActivity : AppCompatActivity() {
             btnJobScheduler.setOnClickListener {
                 val componentName = ComponentName(this@MainActivity, MyJobService::class.java)
                 val jobInfo = JobInfo.Builder(MyJobService.JOB_ID, componentName)
+//                    .setExtras(MyJobService.newBundle(page++))
+
                     .setRequiresCharging(true)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
                     .build()
 
                 val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
-                jobScheduler.schedule(jobInfo)
+
+                val intent = MyJobService.newIntent(page++)
+                val jobWorkItem = JobWorkItem(intent)
+                jobScheduler.enqueue(jobInfo, jobWorkItem)
             }
 
             btnJobIntentService.setOnClickListener {
+                MyJobIntentService.enqueue(this@MainActivity, page++)
 
             }
 
