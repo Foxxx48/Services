@@ -7,9 +7,12 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.app.job.JobWorkItem
 import android.content.ComponentName
+import android.content.ServiceConnection
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -24,7 +27,21 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
 
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(p0: ComponentName?, service: IBinder?) {
+           val binder = (service as? MyForegroundService.LocalBinder) ?: return
+            val foregroundService = binder.getService()
+            foregroundService.onProgressSetChanged = { progress ->
+                Log.d("MainActivity", "$progress")
+                binding.progressBarLoading.progress = progress
+            }
 
+        }
+
+        override fun onServiceDisconnected(p0: ComponentName?) {
+        }
+
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -32,6 +49,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
 
         with(binding) {
             btnSimpleService.setOnClickListener {
@@ -114,6 +133,19 @@ class MainActivity : AppCompatActivity() {
 
 
         notificationManager.notify(1, notification)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindService(
+            MyForegroundService.newIntent(this@MainActivity),
+            serviceConnection,
+            0)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(serviceConnection)
     }
 
     override fun onDestroy() {

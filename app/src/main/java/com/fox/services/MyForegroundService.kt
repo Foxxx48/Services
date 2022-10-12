@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -16,18 +17,33 @@ class MyForegroundService : Service() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private val notificationManager by lazy {
+        getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    private val notificationBuilder by lazy {
+        createNotificationBuilder()
+    }
+
+    var onProgressSetChanged: ((Int) -> Unit)? = null
+
     override fun onCreate() {
         super.onCreate()
         log("onCreate")
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         log("onStartCommand")
         coroutineScope.launch {
-            for (i in 0 until   20) {
+            for (i in 0..100 step 5) {
                 delay(1000)
+                val notification = notificationBuilder
+                    .setProgress(100, i, false)
+                    .build()
+                notificationManager.notify(NOTIFICATION_ID, notification)
+                onProgressSetChanged?.invoke(i)
                 log("Timer: $i")
             }
             stopSelf()
@@ -41,30 +57,31 @@ class MyForegroundService : Service() {
         log("onDestroy")
     }
 
-    override fun onBind(p0: Intent?): IBinder? {
-        TODO("Not yet implemented")
+    override fun onBind(p0: Intent?): IBinder {
+        log("onBind")
+        return LocalBinder()
     }
 
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("ForegroundService")
-            .setContentText("was started")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .build()
-    }
+    private fun createNotificationBuilder() = NotificationCompat.Builder(this, CHANNEL_ID)
+        .setContentTitle("ForegroundService")
+        .setContentText("was started")
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setProgress(100, 0, false)
+        .setOnlyAlertOnce(true)
+
 
     private fun createNotificationChannel() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val notificationChannel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT
             )
+            notificationManager.createNotificationChannel(notificationChannel)
         } else {
             TODO("VERSION.SDK_INT < O")
         }
-        notificationManager.createNotificationChannel(notificationChannel)
+
     }
 
     private fun log(message: String) {
@@ -81,4 +98,10 @@ class MyForegroundService : Service() {
             return Intent(context, MyForegroundService::class.java)
         }
     }
+
+    inner class LocalBinder : Binder() {
+        fun getService() = this@MyForegroundService
+    }
 }
+
+

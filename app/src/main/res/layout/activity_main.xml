@@ -9,6 +9,18 @@
     tools:context=".MainActivity"
     >
 
+    <ProgressBar
+        android:id="@+id/progressBarLoading"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:progress="0"
+        android:max="100"
+        tools:progress="30"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/btn_simple_service"
         style="@style/ServiceButtonStyle"
@@ -73,4 +85,5 @@
         android:text="@string/stop"
         android:backgroundTint="#FF5722"
         />
+
 </LinearLayout>
