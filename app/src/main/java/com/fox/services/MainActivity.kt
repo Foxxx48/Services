@@ -1,8 +1,10 @@
 package com.fox.services
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.app.job.JobWorkItem
@@ -19,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
 import com.fox.services.databinding.ActivityMainBinding
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -92,7 +95,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnAlarmManager.setOnClickListener {
-
+                    val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.SECOND, 30)
+                val intent = AlarmReceiver.newIntent(this@MainActivity)
+                val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, 100, intent, 0 )
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
             }
 
             btnWorkManager.setOnClickListener {
